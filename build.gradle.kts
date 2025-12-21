@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id ("com.github.ben-manes.versions") version "0.53.0"
+    application
 }
 
 group = "hexlet.code"
@@ -13,6 +14,10 @@ repositories {
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+application {
+    mainClass = "hexlet.code.App"
 }
 
 tasks.test {
