@@ -1,7 +1,7 @@
 package hexlet.code;
 
 import picocli.CommandLine;
-import picocli.CommandLine.*;
+import picocli.CommandLine.Command;
 
 @Command(
         name = "gendiff",
