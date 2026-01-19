@@ -3,6 +3,7 @@ plugins {
     id ("com.github.ben-manes.versions") version "0.53.0"
     application
     checkstyle
+    jacoco
 }
 
 group = "hexlet.code"
@@ -13,8 +14,19 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.assertj:assertj-core:3.22.0")
+
+    // JUnit 5 BOM – задаёт версии всех артефактов JUnit
+    testImplementation (platform("org.junit:junit-bom:5.10.0"))
+
+    // Тестовые аннотации (api)
+    testImplementation ("org.junit.jupiter:junit-jupiter-api")
+
+    // Движок, который действительно запускает тесты
+    testRuntimeOnly  ("org.junit.jupiter:junit-jupiter-engine")
+
+    // Альтернатива: добавьте launcher напрямую
+    testRuntimeOnly ("org.junit.platform:junit-platform-launcher")
 
     implementation("info.picocli:picocli:4.7.7")
     annotationProcessor ("info.picocli:picocli-codegen:4.7.7")
