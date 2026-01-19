@@ -1,5 +1,6 @@
 package hexlet.code;
 
+import hexlet.code.core.Differ;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -7,6 +8,7 @@ import picocli.CommandLine.Parameters;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static hexlet.code.util.JsonFileReader.readJson;
 
@@ -17,7 +19,7 @@ import static hexlet.code.util.JsonFileReader.readJson;
  * аргументов командной строки и отображения справки/версии.  По умолчанию
  * вывод форматируется в стиле “stylish”.</p>
  *
- * @see App#run()
+ * @see App#call()
  */
 @Command(
         name = "gendiff",
@@ -25,7 +27,7 @@ import static hexlet.code.util.JsonFileReader.readJson;
         version = "0.1",
         description = "Compares two configuration files and shows a difference."
 )
-public class App implements Runnable {
+public class App implements Callable<Integer> {
 
     /**
      * Формат вывода результата.
@@ -59,13 +61,20 @@ public class App implements Runnable {
     }
 
     @Override
-    public void run() {
-        try {
-            Map<String, Object> data1 = readJson(filepath1.getPath());
-            Map<String, Object> data2 = readJson(filepath2.getPath());
-        } catch (Exception e) {
-            System.err.println("Ошибка при чтении файлов: " + e.getMessage());
-        }
-        System.out.println("Сравниваем файлы…");
+    public Integer call() throws Exception {
+
+        // Чтение и парсинг файлов
+        Map<String, Object> data1 = readJson(filepath1.getPath());
+        Map<String, Object> data2 = readJson(filepath2.getPath());
+
+        // Сравнение данных
+        String diff = Differ.generate(data1, data2);
+
+        // Вывод результата
+        System.out.println(diff);
+
+        // Picoli ожидает 0
+        return 0;
+
     }
 }
