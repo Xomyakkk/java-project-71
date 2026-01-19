@@ -1,6 +1,7 @@
 package hexlet.code.core;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,8 +45,8 @@ public class DifferTest {
     @Test
     @DisplayName("Оба Map пустые. Возвращается строка‑шаблон без элементов")
     void emptyMaps() {
-        Map<String,Object> a = Map.of();
-        Map<String,Object> b = Map.of();
+        Map<String, Object> a = Map.of();
+        Map<String, Object> b = Map.of();
 
         String expected = "{\n\n}";
         assertEquals(expected, Differ.generate(a, b));
@@ -54,8 +55,8 @@ public class DifferTest {
     @Test
     @DisplayName("Maps идентичны. Выводит только «одинаковые» строки, без префиксов")
     void identicalMaps() {
-        Map<String,Object> a = Map.of("k","v");
-        Map<String,Object> b = Map.of("k","v");
+        Map<String, Object> a = Map.of("k", "v");
+        Map<String, Object> b = Map.of("k", "v");
 
         String expected = """
                 {
@@ -67,8 +68,8 @@ public class DifferTest {
     @Test
     @DisplayName("Только ключ из первого Map. Появляется только строка с - ")
     void onlyInFirst() {
-        Map<String,Object> a = Map.of("only", 1);
-        Map<String,Object> b = Map.of();
+        Map<String, Object> a = Map.of("only", 1);
+        Map<String, Object> b = Map.of();
 
         String expected = """
                 {
@@ -80,8 +81,8 @@ public class DifferTest {
     @Test
     @DisplayName("Только ключ из второго Map. Появляется только строка с + ")
     void onlyInSecond() {
-        Map<String,Object> a = Map.of();
-        Map<String,Object> b = Map.of("only", 2);
+        Map<String, Object> a = Map.of();
+        Map<String, Object> b = Map.of("only", 2);
 
         String expected = """
                 {
@@ -93,8 +94,8 @@ public class DifferTest {
     @Test
     @DisplayName("Ключи совпадают, но значения различаются. Два элемента: - key: + + key:")
     void differentValues() {
-        Map<String,Object> a = Map.of("x", 10);
-        Map<String,Object> b = Map.of("x", 20);
+        Map<String, Object> a = Map.of("x", 10);
+        Map<String, Object> b = Map.of("x", 20);
 
         String expected = """
                 {
@@ -107,9 +108,9 @@ public class DifferTest {
     @Test
     @DisplayName("Нулевые значения (null). null корректно выводится и учитывается при сравнении")
     void nullValues() {
-        Map<String,Object> a = new HashMap<>();
+        Map<String, Object> a = new HashMap<>();
         a.put("k", null);
-        Map<String,Object> b = Map.of("k", "notNull");
+        Map<String, Object> b = Map.of("k", "notNull");
 
         String expected = """
                 {
@@ -123,12 +124,12 @@ public class DifferTest {
     @DisplayName("Порядок входных ключей неважен. Вывод всегда сортирован по алфавиту")
     void orderIndependence() {
         // map1: {"b":2,"a":1}
-        Map<String,Object> a = new LinkedHashMap<>();
+        Map<String, Object> a = new LinkedHashMap<>();
         a.put("b", 2);
         a.put("a", 1);
 
         // map2: {"c":3,"a":1}
-        Map<String,Object> b = new LinkedHashMap<>();
+        Map<String, Object> b = new LinkedHashMap<>();
         b.put("c", 3);
         b.put("a", 1);
 
