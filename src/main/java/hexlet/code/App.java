@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import static hexlet.code.util.JsonFileReader.readJson;
+import static hexlet.code.util.Parser.parse;
 
 /**
  * Точка входа в консольное приложение «gendiff».
@@ -64,8 +64,8 @@ public class App implements Callable<Integer> {
     public Integer call() throws Exception {
 
         // Чтение и парсинг файлов
-        Map<String, Object> data1 = readJson(filepath1.getPath());
-        Map<String, Object> data2 = readJson(filepath2.getPath());
+        Map<String, Object> data1 = parse(filepath1.getPath());
+        Map<String, Object> data2 = parse(filepath2.getPath());
 
         // Сравнение данных
         String diff = Differ.generate(data1, data2);

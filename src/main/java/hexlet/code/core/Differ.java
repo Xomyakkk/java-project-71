@@ -1,11 +1,8 @@
 package hexlet.code.core;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.TreeMap;
 
 /**
  * Класс, создающий строковое представление различий между двумя Map‑объектами.
@@ -39,45 +36,43 @@ public class Differ {
      */
     public static String generate(Map<String, Object> map1, Map<String, Object> map2) {
 
-        // Получаем новый сортированный Map из map1 и map2. При совпадении ключей оставляем значение из map1
-        Map<String, Object> sortedMap = Stream.concat(
-                map1.entrySet().stream(),
-                map2.entrySet().stream()
-                )
-                .sorted(Map.Entry.comparingByKey())
-        .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
-                (v1, v2) -> v1,     // если ключ встречается в обоих мапах – берём из map1
-                TreeMap::new    // TreeMap сортирует автоматом по ключу в алфавитном порядке
-        ));
+        // Создаем отсортированное множество строк
+        var keys = new TreeSet<String>();
+
+        // Добавляем только ключи из двух мап
+        keys.addAll(map1.keySet());
+        keys.addAll(map2.keySet());
 
         // StringJoiner поможет собрать строку с нужным разделителем и скобками
         StringJoiner result = new StringJoiner("\n", "{\n", "\n}");
 
+
         /* Проходимся по всем ключам в отсортированном Map.
          * В зависимости от наличия ключа в исходных мапах добавляем
          * соответствующие строки с префиксами. */
-        sortedMap.forEach((key, values) -> {
-            if (map1.containsKey(key) && map2.containsKey(key)) {
-                Object value1 = map1.get(key);
-                Object value2 = map2.get(key);
+        for (var key : keys) {
+            boolean inFirst = map1.containsKey(key);
+            boolean inSecond = map2.containsKey(key);
 
-                // Если значения совпадают – просто выводим ключ и значение
+            Object value1 = map1.get(key);
+            Object value2 = map2.get(key);
+
+            // Если значения совпадают – просто выводим ключ и значение
+            if (inFirst && inSecond) {
                 if (Objects.equals(value1, value2)) {
                     result.add("    " + key + ": " + value1);
                 } else { // иначе показываем обе версии
                     result.add("  - " + key + ": " + value1);
                     result.add("  + " + key + ": " + value2);
                 }
-            } else if (map1.containsKey(key)) {
+            } else if (inFirst) {
                 // Ключ присутствует только в первом мапе – удалён
-                result.add("  - " + key + ": " + map1.get(key));
+                result.add("  - " + key + ": " + value1);
             } else {
                 // Ключ присутствует только во втором мапе – добавлен
-                result.add("  + " + key + ": " + map2.get(key));
+                result.add("  + " + key + ": " + value2);
             }
-        });
+        }
 
         return result.toString();
     }
