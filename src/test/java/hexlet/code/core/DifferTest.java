@@ -1,17 +1,57 @@
 package hexlet.code.core;
 
+import static hexlet.code.util.Parser.parse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 
 public class DifferTest {
+
+    private static final Path JSON1 =
+            Path.of("src", "test", "resources", "include1.json");
+    private static final Path JSON2 =
+            Path.of("src", "test", "resources", "include2.json");
+
+    private static final Path YAML1 =
+            Path.of("src", "test", "resources", "include1.yaml");
+    private static final Path YAML2 =
+            Path.of("src", "test", "resources", "include2.yaml");
+
+    private static final String EXPECTED = """
+{
+    chars1: [a, b, c]
+  - chars2: [d, e, f]
+  + chars2: false
+  - checked: false
+  + checked: true
+  - default: null
+  + default: [value1, value2]
+  - id: 45
+  + id: null
+  - key1: value1
+  + key2: value2
+    numbers1: [1, 2, 3, 4]
+  - numbers2: [2, 3, 4, 5]
+  + numbers2: [22, 33, 44, 55]
+  - numbers3: [3, 4, 5]
+  + numbers4: [4, 5, 6]
+  + obj1: {nestedKey=value, isNested=true}
+  - setting1: Some value
+  + setting1: Another value
+  - setting2: 200
+  + setting2: 300
+  - setting3: true
+  + setting3: none
+}
+""";
 
     @Test
     @DisplayName("Проверяется полная логика diff")
@@ -149,5 +189,19 @@ public class DifferTest {
                 () -> Differ.generate(null, Map.of()));
         assertThrows(NullPointerException.class,
                 () -> Differ.generate(Map.of(), null));
+    }
+
+    @Test
+    @DisplayName("Тест вложенных структур в json")
+    void testJsonNestedDiffDefaultFormatter() throws Exception {
+        var actual = Differ.generate(parse(JSON1.toString()), parse(JSON2.toString()));
+        assertEquals(EXPECTED, actual);
+    }
+
+    @Test
+    @DisplayName("Тест вложенных структур в yaml")
+    void testYamlNestedDiffDefaultFormatter() throws Exception {
+        var actual = Differ.generate(parse(YAML1.toString()), parse(YAML2.toString()));
+        assertEquals(EXPECTED, actual);
     }
 }
