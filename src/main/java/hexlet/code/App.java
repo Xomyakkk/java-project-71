@@ -35,6 +35,7 @@ public class App implements Callable<Integer> {
      * @apiNote По умолчанию используется «stylish».
      */
     @Option(names = {"-f", "--format"},
+            defaultValue = "stylish",
             description = "output format [default: stylish]",
             paramLabel = "format")
     private String format = "stylish";   // значение по умолчанию

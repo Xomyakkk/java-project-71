@@ -1,79 +1,89 @@
 package hexlet.code.core;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import hexlet.code.formatter.Formatter;
+import hexlet.code.formatter.StylishFormatter;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- * Класс, создающий строковое представление различий между двумя Map‑объектами.
+ * Класс, реализующий построение и форматирование различий между двумя структурами данных.
  *
- * <p>Метод {@link #generate(Map, Map)} принимает два {@code Map<String,Object>} и
- * генерирует «diff» в виде строки. В выводе:
- * <ul>
- *     <li><b>-</b> — элемент присутствует только в первом мапе;</li>
- *     <li><b>+</b> — элемент присутствует только во втором мапе;</li>
- *     <li>без префикса — ключи одинаковы и значения совпадают.</li>
- * </ul>
+ * <p>Внутри используется абстрактное представление «DiffNode», которое хранит
+ * информацию о ключе, статусе изменения (добавлен, удалён,
+ * изменён или не менялся) и значениях из обеих структур.</p>
  *
- * <p>Ключи в результирующей строке отсортированы лексикографически, чтобы
- * вывод был предсказуемым независимо от порядка входных мапов.
+ * <p>Для форматирования результата реализованы различные {@link Formatter}‑ы.
+ * В зависимости от переданного имени формата возвращается строковое представление
+ * разницы. По умолчанию используется стиль «stylish».</p>
  */
 public class Differ {
 
     /**
-     * Генерирует diff‑строку между двумя Map-объектами.
+     * Генерирует строку с описанием различий между двумя структурами данных в указанном формате.
      *
-     * @param map1 первый исходный мап (значения из него сохраняются при конфликте ключей)
-     * @param map2 второй исходный мап
-     * @return строка, представляющая различия в формате:
-     * <pre>
-     * {
-     *   key: value          // одинаковые значения
-     *   - key: oldValue     // изменённые или удалённые
-     *   + key: newValue
-     * }
-     * </pre>
+     * @param data1   первая карта, содержащая исходные данные
+     * @param data2   вторая карта, содержащая обновлённые данные
+     * @param format  имя формата (например, {@code "stylish"}, {@code "plain"} или {@code "json"})
+     * @return строковое представление различий согласно выбранному форматёру
      */
-    public static String generate(Map<String, Object> map1, Map<String, Object> map2) {
+    public static String generate(Map<String, Object> data1,
+                                  Map<String, Object> data2,
+                                  String format) {
 
-        // Создаем отсортированное множество строк
-        var keys = new TreeSet<String>();
+        List<DiffNode> diff = buildDiff(data1, data2);
 
-        // Добавляем только ключи из двух мап
-        keys.addAll(map1.keySet());
-        keys.addAll(map2.keySet());
+        if (!"stylish".equals(format)) {
+            throw new IllegalArgumentException("Unknown format: " + format);
+        }
 
-        // StringJoiner поможет собрать строку с нужным разделителем и скобками
-        StringJoiner result = new StringJoiner("\n", "{\n", "\n}");
+        return new StylishFormatter().format(diff);
+    }
 
+    /**
+     * Перегрузка метода {@link #generate(Map, Map, String)} с форматом по умолчанию.
+     *
+     * <p>Если формат не указан, используется стиль «stylish».</p>
+     *
+     * @param data1 первая карта
+     * @param data2 вторая карта
+     * @return строковое представление различий в формате {@code "stylish"}
+     */
+    public static String generate(Map<String, Object> data1,
+                                  Map<String, Object> data2) {
+        return generate(data1, data2, "stylish");
+    }
 
-        /* Проходимся по всем ключам в отсортированном Map.
-         * В зависимости от наличия ключа в исходных мапах добавляем
-         * соответствующие строки с префиксами. */
-        for (var key : keys) {
-            boolean inFirst = map1.containsKey(key);
-            boolean inSecond = map2.containsKey(key);
+    /**
+     * Внутренний вспомогательный метод, который строит абстрактное представление
+     * различий между двумя картами. Для каждого ключа создаётся объект {@link DiffNode},
+     * в котором хранится статус изменения и соответствующие значения.
+     *
+     * @param data1 первая карта
+     * @param data2 вторая карта
+     * @return список узлов разницы, отсортированный по возрастанию имени ключа
+     */
+    private static List<DiffNode> buildDiff(Map<String, Object> data1,
+                                            Map<String, Object> data2) {
 
-            Object value1 = map1.get(key);
-            Object value2 = map2.get(key);
+        var keys = new java.util.TreeSet<String>();
+        keys.addAll(data1.keySet());
+        keys.addAll(data2.keySet());
 
-            // Если значения совпадают – просто выводим ключ и значение
-            if (inFirst && inSecond) {
-                if (Objects.equals(value1, value2)) {
-                    result.add("    " + key + ": " + value1);
-                } else { // иначе показываем обе версии
-                    result.add("  - " + key + ": " + value1);
-                    result.add("  + " + key + ": " + value2);
-                }
-            } else if (inFirst) {
-                // Ключ присутствует только в первом мапе – удалён
-                result.add("  - " + key + ": " + value1);
+        List<DiffNode> diff = new java.util.ArrayList<>();
+
+        for (String key : keys) {
+            if (!data1.containsKey(key)) {
+                diff.add(new DiffNode(key, Status.ADDED, null, data2.get(key)));
+            } else if (!data2.containsKey(key)) {
+                diff.add(new DiffNode(key, Status.REMOVED, data1.get(key), null));
+            } else if (java.util.Objects.equals(data1.get(key), data2.get(key))) {
+                diff.add(new DiffNode(key, Status.UNCHANGED, data1.get(key), data2.get(key)));
             } else {
-                // Ключ присутствует только во втором мапе – добавлен
-                result.add("  + " + key + ": " + value2);
+                diff.add(new DiffNode(key, Status.UPDATED, data1.get(key), data2.get(key)));
             }
         }
 
-        return result.toString();
+        return diff;
     }
 }

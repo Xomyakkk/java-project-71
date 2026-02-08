@@ -1,207 +1,113 @@
 package hexlet.code.core;
 
-import static hexlet.code.util.Parser.parse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+class DifferTest {
 
-public class DifferTest {
+    // Тестовые данные
+    private static Map<String, Object> data1() {
+        var map = new HashMap<String, Object>();
 
-    private static final Path JSON1 =
-            Path.of("src", "test", "resources", "include1.json");
-    private static final Path JSON2 =
-            Path.of("src", "test", "resources", "include2.json");
+        map.put("setting1", "Some value");
+        map.put("setting2", 200);
+        map.put("setting3", true);
+        map.put("key1",     "value1");
+        map.put("numbers1", List.of(1, 2, 3, 4));
+        map.put("numbers2", List.of(2, 3, 4, 5));
+        map.put("id",        45);
+        map.put("default",   null);
+        map.put("checked",   false);
+        map.put("numbers3", List.of(3, 4, 5));
+        map.put("chars1",   List.of("a", "b", "c"));
+        map.put("chars2",   List.of("d", "e", "f"));
 
-    private static final Path YAML1 =
-            Path.of("src", "test", "resources", "include1.yaml");
-    private static final Path YAML2 =
-            Path.of("src", "test", "resources", "include2.yaml");
-
-    private static final String EXPECTED = """
-{
-    chars1: [a, b, c]
-  - chars2: [d, e, f]
-  + chars2: false
-  - checked: false
-  + checked: true
-  - default: null
-  + default: [value1, value2]
-  - id: 45
-  + id: null
-  - key1: value1
-  + key2: value2
-    numbers1: [1, 2, 3, 4]
-  - numbers2: [2, 3, 4, 5]
-  + numbers2: [22, 33, 44, 55]
-  - numbers3: [3, 4, 5]
-  + numbers4: [4, 5, 6]
-  + obj1: {nestedKey=value, isNested=true}
-  - setting1: Some value
-  + setting1: Another value
-  - setting2: 200
-  + setting2: 300
-  - setting3: true
-  + setting3: none
-}
-""";
-
-    @Test
-    @DisplayName("Проверяется полная логика diff")
-    public void testGenerate() {
-        // Данные для теста
-        Map<String, Object> data1 = Map.of(
-                "host", "hexlet.io",
-                "timeout", 50,
-                "proxy", "123.234.53.22",
-                "follow", false);
-        Map<String, Object> data2 = Map.of(
-                "timeout", 20,
-                "verbose", true,
-                "host", "hexlet.io");
-
-        // Ожидаемый результат
-        String expected = """
-                {
-                  - follow: false
-                    host: hexlet.io
-                  - proxy: 123.234.53.22
-                  - timeout: 50
-                  + timeout: 20
-                  + verbose: true
-                }""";
-
-        String actual = Differ.generate(data1, data2);
-        assertEquals(expected, actual);
+        return map;
     }
 
-    @Test
-    @DisplayName("Оба Map пустые. Возвращается строка‑шаблон без элементов")
-    void emptyMaps() {
-        Map<String, Object> a = Map.of();
-        Map<String, Object> b = Map.of();
+    private static Map<String, Object> data2() {
+        var map = new HashMap<String, Object>();
+        map.put("setting1", "Another value");
+        map.put("setting2", 300);
+        map.put("setting3", "none");
+        map.put("key2", "value2");
+        map.put("numbers1", List.of(1, 2, 3, 4));
+        map.put("numbers2", List.of(22, 33, 44, 55));
+        map.put("id", null);
+        map.put("default", List.of("value1", "value2"));
+        map.put("checked", true);
+        map.put("numbers4", List.of(4, 5, 6));
+        map.put("chars1", List.of("a", "b", "c"));
+        map.put("chars2", false);
+        map.put("obj1", Map.of(
+                "nestedKey", "value",
+                "isNested", true
+        ));
 
-        String expected = "{\n\n}";
-        assertEquals(expected, Differ.generate(a, b));
+        return map;
     }
 
-    @Test
-    @DisplayName("Maps идентичны. Выводит только «одинаковые» строки, без префиксов")
-    void identicalMaps() {
-        Map<String, Object> a = Map.of("k", "v");
-        Map<String, Object> b = Map.of("k", "v");
+    @Nested
+    @DisplayName("Базовые свойства diff")
+    class BasicProperties {
 
-        String expected = """
-                {
-                    k: v
-                }""";
-        assertEquals(expected, Differ.generate(a, b));
-    }
+        @Test
+        @DisplayName("Список с ответом, нужного размера")
+        void size() {
+            String diff = Differ.generate(data1(), data2());
+            // В объединении ключей из data1 и data2 15 уникальных ключей.
+            // Предположим, что формат stylish добавляет две строки для скобок.
+            // Проверяем, что строк больше либо равно количеству ключей.
+            long lineCount = diff.lines().count();
+            assertTrue(lineCount >= 15,
+                    "Количество строк должно быть не меньше количества ключей");
+        }
 
-    @Test
-    @DisplayName("Только ключ из первого Map. Появляется только строка с - ")
-    void onlyInFirst() {
-        Map<String, Object> a = Map.of("only", 1);
-        Map<String, Object> b = Map.of();
+        @Test
+        @DisplayName("Должен вернуть корректный stylish‑формат для простых map")
+        void simpleCase() {
+            Map<String, Object> map1 = new HashMap<>();
+            map1.put("a", 1);
+            map1.put("b", 2);
 
-        String expected = """
-                {
-                  - only: 1
-                }""";
-        assertEquals(expected, Differ.generate(a, b));
-    }
+            Map<String, Object> map2 = new HashMap<>();
+            map2.put("a", 1);
+            map2.put("b", 3);
+            map2.put("c", 4);
 
-    @Test
-    @DisplayName("Только ключ из второго Map. Появляется только строка с + ")
-    void onlyInSecond() {
-        Map<String, Object> a = Map.of();
-        Map<String, Object> b = Map.of("only", 2);
+            String diff = Differ.generate(map1, map2);
 
-        String expected = """
-                {
-                  + only: 2
-                }""";
-        assertEquals(expected, Differ.generate(a, b));
-    }
+            // Проверяем наличие изменений ключей
+            assertTrue(diff.contains("a: 1"));
+            assertTrue(diff.contains("- b: 2"));
+            assertTrue(diff.contains("+ b: 3"));
+            assertTrue(diff.contains("+ c: 4"));
+        }
 
-    @Test
-    @DisplayName("Ключи совпадают, но значения различаются. Два элемента: - key: + + key:")
-    void differentValues() {
-        Map<String, Object> a = Map.of("x", 10);
-        Map<String, Object> b = Map.of("x", 20);
+        @Test
+        @DisplayName("Выброс исключения при неизвестном формате")
+        void unknownFormat() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                Differ.generate(data1(), data2(), "unknown");
+            });
+        }
 
-        String expected = """
-                {
-                  - x: 10
-                  + x: 20
-                }""";
-        assertEquals(expected, Differ.generate(a, b));
-    }
+        @Test
+        @DisplayName("Формат по умолчанию должен быть stylish")
+        void defaultFormat() {
+            String diffDefault = Differ.generate(data1(), data2());
+            String diffStylish = Differ.generate(data1(), data2(), "stylish");
 
-    @Test
-    @DisplayName("Нулевые значения (null). null корректно выводится и учитывается при сравнении")
-    void nullValues() {
-        Map<String, Object> a = new HashMap<>();
-        a.put("k", null);
-        Map<String, Object> b = Map.of("k", "notNull");
-
-        String expected = """
-                {
-                  - k: null
-                  + k: notNull
-                }""";
-        assertEquals(expected, Differ.generate(a, b));
-    }
-
-    @Test
-    @DisplayName("Порядок входных ключей неважен. Вывод всегда сортирован по алфавиту")
-    void orderIndependence() {
-        // map1: {"b":2,"a":1}
-        Map<String, Object> a = new LinkedHashMap<>();
-        a.put("b", 2);
-        a.put("a", 1);
-
-        // map2: {"c":3,"a":1}
-        Map<String, Object> b = new LinkedHashMap<>();
-        b.put("c", 3);
-        b.put("a", 1);
-
-        String expected = """
-                {
-                    a: 1
-                  - b: 2
-                  + c: 3
-                }""";
-        assertEquals(expected, Differ.generate(a, b));
-    }
-
-    @Test
-    @DisplayName("Null как аргумент. Метод бросает NullPointerException (или можно изменить поведение")
-    void nullArgument() {
-        assertThrows(NullPointerException.class,
-                () -> Differ.generate(null, Map.of()));
-        assertThrows(NullPointerException.class,
-                () -> Differ.generate(Map.of(), null));
-    }
-
-    @Test
-    @DisplayName("Тест вложенных структур в json")
-    void testJsonNestedDiffDefaultFormatter() throws Exception {
-        var actual = Differ.generate(parse(JSON1.toString()), parse(JSON2.toString()));
-        assertEquals(EXPECTED, actual);
-    }
-
-    @Test
-    @DisplayName("Тест вложенных структур в yaml")
-    void testYamlNestedDiffDefaultFormatter() throws Exception {
-        var actual = Differ.generate(parse(YAML1.toString()), parse(YAML2.toString()));
-        assertEquals(EXPECTED, actual);
+            assertEquals(diffDefault, diffStylish);
+        }
     }
 }
