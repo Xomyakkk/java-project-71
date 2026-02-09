@@ -1,6 +1,7 @@
 package hexlet.code.core;
 
 import hexlet.code.formatter.Formatter;
+import hexlet.code.formatter.PlainFormatter;
 import hexlet.code.formatter.StylishFormatter;
 
 import java.util.List;
@@ -33,11 +34,16 @@ public class Differ {
 
         List<DiffNode> diff = buildDiff(data1, data2);
 
-        if (!"stylish".equals(format)) {
+        Formatter formatter;
+        if ("stylish".equals(format)) {
+            formatter = new StylishFormatter();
+        } else if ("plain".equals(format)) {
+            formatter = new PlainFormatter();
+        } else {
             throw new IllegalArgumentException("Unknown format: " + format);
         }
 
-        return new StylishFormatter().format(diff);
+        return formatter.format(diff);
     }
 
     /**

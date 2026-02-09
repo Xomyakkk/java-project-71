@@ -110,4 +110,29 @@ class DifferTest {
             assertEquals(diffDefault, diffStylish);
         }
     }
+
+    @Nested
+    @DisplayName("Plain формат")
+    class PlainFormat {
+
+        @Test
+        @DisplayName("Должен вернуть корректный plain‑формат")
+        void plainFormat() {
+            String diff = Differ.generate(data1(), data2(), "plain");
+
+            assertTrue(diff.contains("Property 'chars2' was updated. From [complex value] to false"));
+            assertTrue(diff.contains("Property 'checked' was updated. From false to true"));
+            assertTrue(diff.contains("Property 'default' was updated. From null to [complex value]"));
+            assertTrue(diff.contains("Property 'id' was updated. From 45 to null"));
+            assertTrue(diff.contains("Property 'key1' was removed"));
+            assertTrue(diff.contains("Property 'key2' was added with value: 'value2'"));
+            assertTrue(diff.contains("Property 'numbers2' was updated. From [complex value] to [complex value]"));
+            assertTrue(diff.contains("Property 'numbers3' was removed"));
+            assertTrue(diff.contains("Property 'numbers4' was added with value: [complex value]"));
+            assertTrue(diff.contains("Property 'obj1' was added with value: [complex value]"));
+            assertTrue(diff.contains("Property 'setting1' was updated. From 'Some value' to 'Another value'"));
+            assertTrue(diff.contains("Property 'setting2' was updated. From 200 to 300"));
+            assertTrue(diff.contains("Property 'setting3' was updated. From true to 'none'"));
+        }
+    }
 }

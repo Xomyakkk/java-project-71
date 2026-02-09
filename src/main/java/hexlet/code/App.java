@@ -69,7 +69,7 @@ public class App implements Callable<Integer> {
         Map<String, Object> data2 = parse(filepath2.getPath());
 
         // Сравнение данных
-        String diff = Differ.generate(data1, data2);
+        String diff = Differ.generate(data1, data2, format);
 
         // Вывод результата
         System.out.println(diff);
