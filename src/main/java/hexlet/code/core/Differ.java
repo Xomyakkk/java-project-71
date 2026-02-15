@@ -1,6 +1,7 @@
 package hexlet.code.core;
 
 import hexlet.code.formatter.Formatter;
+import hexlet.code.formatter.JsonFormatter;
 import hexlet.code.formatter.PlainFormatter;
 import hexlet.code.formatter.StylishFormatter;
 
@@ -39,6 +40,8 @@ public class Differ {
             formatter = new StylishFormatter();
         } else if ("plain".equals(format)) {
             formatter = new PlainFormatter();
+        } else if ("json".equals(format)) {
+            formatter = new JsonFormatter();
         } else {
             throw new IllegalArgumentException("Unknown format: " + format);
         }

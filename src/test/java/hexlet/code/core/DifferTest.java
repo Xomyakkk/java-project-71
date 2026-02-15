@@ -135,4 +135,46 @@ class DifferTest {
             assertTrue(diff.contains("Property 'setting3' was updated. From true to 'none'"));
         }
     }
+
+    @Nested
+    @DisplayName("Json формат")
+    class JsonFormat {
+
+        @Test
+        @DisplayName("Должен вернуть корректный json‑формат")
+        void jsonFormat() {
+            String diff = Differ.generate(data1(), data2(), "json");
+
+            assertTrue(diff.contains("\"key\":\"chars1\""));
+            assertTrue(diff.contains("\"status\":\"UNCHANGED\""));
+            assertTrue(diff.contains("\"key\":\"chars2\""));
+            assertTrue(diff.contains("\"status\":\"UPDATED\""));
+            assertTrue(diff.contains("\"key\":\"checked\""));
+            assertTrue(diff.contains("\"status\":\"UPDATED\""));
+            assertTrue(diff.contains("\"key\":\"default\""));
+            assertTrue(diff.contains("\"status\":\"UPDATED\""));
+            assertTrue(diff.contains("\"key\":\"id\""));
+            assertTrue(diff.contains("\"status\":\"UPDATED\""));
+            assertTrue(diff.contains("\"key\":\"key1\""));
+            assertTrue(diff.contains("\"status\":\"REMOVED\""));
+            assertTrue(diff.contains("\"key\":\"key2\""));
+            assertTrue(diff.contains("\"status\":\"ADDED\""));
+            assertTrue(diff.contains("\"key\":\"numbers1\""));
+            assertTrue(diff.contains("\"status\":\"UNCHANGED\""));
+            assertTrue(diff.contains("\"key\":\"numbers2\""));
+            assertTrue(diff.contains("\"status\":\"UPDATED\""));
+            assertTrue(diff.contains("\"key\":\"numbers3\""));
+            assertTrue(diff.contains("\"status\":\"REMOVED\""));
+            assertTrue(diff.contains("\"key\":\"numbers4\""));
+            assertTrue(diff.contains("\"status\":\"ADDED\""));
+            assertTrue(diff.contains("\"key\":\"obj1\""));
+            assertTrue(diff.contains("\"status\":\"ADDED\""));
+            assertTrue(diff.contains("\"key\":\"setting1\""));
+            assertTrue(diff.contains("\"status\":\"UPDATED\""));
+            assertTrue(diff.contains("\"key\":\"setting2\""));
+            assertTrue(diff.contains("\"status\":\"UPDATED\""));
+            assertTrue(diff.contains("\"key\":\"setting3\""));
+            assertTrue(diff.contains("\"status\":\"UPDATED\""));
+        }
+    }
 }
