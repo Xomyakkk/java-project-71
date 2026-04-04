@@ -64,12 +64,8 @@ public class App implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
-        // Чтение и парсинг файлов
-        Map<String, Object> data1 = parse(filepath1.getPath());
-        Map<String, Object> data2 = parse(filepath2.getPath());
-
         // Сравнение данных
-        String diff = Differ.generate(data1, data2, format);
+        String diff = Differ.generate(filepath1.getPath(), filepath2.getPath(), format);
 
         // Вывод результата
         System.out.println(diff);

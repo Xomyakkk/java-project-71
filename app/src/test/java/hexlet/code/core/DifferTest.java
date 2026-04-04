@@ -8,11 +8,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 class DifferTest {
+
+    // Принимает имя файла и возвращает строку с путем к этому файлу
+    private static String resourcePath(String fileName) {
+        Path path = Paths.get("src", "test", "resources", fileName);
+        return path.toString();
+    }
 
     // Тестовые данные
     private static Map<String, Object> data1() {
@@ -62,8 +70,8 @@ class DifferTest {
 
         @Test
         @DisplayName("Список с ответом, нужного размера")
-        void size() {
-            String diff = Differ.generate(data1(), data2());
+        void size() throws Exception{
+            String diff = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "stylish");
             // В объединении ключей из data1 и data2 15 уникальных ключей.
             // Предположим, что формат stylish добавляет две строки для скобок.
             // Проверяем, что строк больше либо равно количеству ключей.
@@ -74,38 +82,30 @@ class DifferTest {
 
         @Test
         @DisplayName("Должен вернуть корректный stylish‑формат для простых map")
-        void simpleCase() {
-            Map<String, Object> map1 = new HashMap<>();
-            map1.put("a", 1);
-            map1.put("b", 2);
+        void simpleCase() throws Exception {
+            String diff = Differ.generate(resourcePath("file1.json"), resourcePath("file2.json"), "stylish");
 
-            Map<String, Object> map2 = new HashMap<>();
-            map2.put("a", 1);
-            map2.put("b", 3);
-            map2.put("c", 4);
-
-            String diff = Differ.generate(map1, map2);
-
-            // Проверяем наличие изменений ключей
-            assertTrue(diff.contains("a: 1"));
-            assertTrue(diff.contains("- b: 2"));
-            assertTrue(diff.contains("+ b: 3"));
-            assertTrue(diff.contains("+ c: 4"));
+            assertTrue(diff.contains("host: hexlet.io"));
+            assertTrue(diff.contains("- timeout: 50"));
+            assertTrue(diff.contains("+ timeout: 20"));
+            assertTrue(diff.contains("- proxy: 123.234.53.22"));
+            assertTrue(diff.contains("+ verbose: true"));
+            assertTrue(diff.contains("- follow: false"));
         }
 
         @Test
         @DisplayName("Выброс исключения при неизвестном формате")
         void unknownFormat() {
             assertThrows(IllegalArgumentException.class, () -> {
-                Differ.generate(data1(), data2(), "unknown");
+                Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "unknown");
             });
         }
 
         @Test
         @DisplayName("Формат по умолчанию должен быть stylish")
-        void defaultFormat() {
-            String diffDefault = Differ.generate(data1(), data2());
-            String diffStylish = Differ.generate(data1(), data2(), "stylish");
+        void defaultFormat() throws Exception {
+            String diffDefault = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "stylish");
+            String diffStylish = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "stylish");
 
             assertEquals(diffDefault, diffStylish);
         }
@@ -117,8 +117,8 @@ class DifferTest {
 
         @Test
         @DisplayName("Должен вернуть корректный plain‑формат")
-        void plainFormat() {
-            String diff = Differ.generate(data1(), data2(), "plain");
+        void plainFormat() throws Exception {
+            String diff = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "plain");
 
             assertTrue(diff.contains("Property 'chars2' was updated. From [complex value] to false"));
             assertTrue(diff.contains("Property 'checked' was updated. From false to true"));
@@ -142,8 +142,8 @@ class DifferTest {
 
         @Test
         @DisplayName("Должен вернуть корректный json‑формат")
-        void jsonFormat() {
-            String diff = Differ.generate(data1(), data2(), "json");
+        void jsonFormat() throws Exception {
+            String diff = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "json");
 
             assertTrue(diff.contains("\"key\":\"chars1\""));
             assertTrue(diff.contains("\"status\":\"UNCHANGED\""));

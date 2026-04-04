@@ -4,6 +4,7 @@ import hexlet.code.formatter.Formatter;
 import hexlet.code.formatter.JsonFormatter;
 import hexlet.code.formatter.PlainFormatter;
 import hexlet.code.formatter.StylishFormatter;
+import hexlet.code.util.Parser;
 
 import java.util.List;
 import java.util.Map;
@@ -50,17 +51,18 @@ public class Differ {
     }
 
     /**
-     * Перегрузка метода {@link #generate(Map, Map, String)} с форматом по умолчанию.
+     * Полный процесс построения diff для файлов: чтение, парсинг, сравнение и форматирование.
      *
-     * <p>Если формат не указан, используется стиль «stylish».</p>
-     *
-     * @param data1 первая карта
-     * @param data2 вторая карта
-     * @return строковое представление различий в формате {@code "stylish"}
+     * @param filePath1 путь к первому файлу
+     * @param filePath2 путь ко второму файлу
+     * @param formatName имя формата вывода
+     * @return строка с разницей файлов
+     * @throws Exception если чтение, парсинг или форматирование завершились ошибкой
      */
-    public static String generate(Map<String, Object> data1,
-                                  Map<String, Object> data2) {
-        return generate(data1, data2, "stylish");
+    public static String generate(String filePath1, String filePath2, String formatName) throws Exception {
+        Map<String, Object> data1 = Parser.parse(filePath1);
+        Map<String, Object> data2 = Parser.parse(filePath2);
+        return generate(data1, data2, formatName);
     }
 
     /**
