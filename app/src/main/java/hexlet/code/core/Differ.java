@@ -15,7 +15,7 @@ public class Differ {
 
     public static String generate(Map<String, Object> data1,
                                   Map<String, Object> data2,
-                                  String format) {
+                                  String format) throws Exception {
 
         List<DiffNode> diff = DiffBuilder.build(data1, data2);
 
@@ -43,7 +43,7 @@ public class Differ {
     }
 
     public static String generate(Map<String, Object> data1,
-                                  Map<String, Object> data2) {
+                                  Map<String, Object> data2) throws Exception {
         return generate(data1, data2, "stylish");
     }
 

@@ -35,9 +35,14 @@ public class App implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
-        String diff = Differ.generate(firstPath.getPath(), secondPath.getPath(), format);
-        System.out.println(diff);
-        return 0;
+    public Integer call() {
+        try {
+            String diff = Differ.generate(firstPath.getPath(), secondPath.getPath(), format);
+            System.out.println(diff);
+            return 0;
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return 1;
+        }
     }
 }
