@@ -2,185 +2,109 @@ package hexlet.code.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hexlet.code.util.Parser;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 class DifferTest {
 
-    // Принимает имя файла и возвращает строку с путем к этому файлу
-    private static String resourcePath(String fileName) {
-        Path path = Paths.get("src", "test", "resources", fileName);
-        return path.toString();
+    private static String resourcePath(String fileName) throws Exception {
+        var url = Objects.requireNonNull(
+                DifferTest.class.getClassLoader().getResource(fileName),
+                "Resource not found: " + fileName);
+        return Path.of(url.toURI()).toString();
     }
 
-    // Тестовые данные
-    private static Map<String, Object> data1() {
-        var map = new HashMap<String, Object>();
-
-        map.put("setting1", "Some value");
-        map.put("setting2", 200);
-        map.put("setting3", true);
-        map.put("key1",     "value1");
-        map.put("numbers1", List.of(1, 2, 3, 4));
-        map.put("numbers2", List.of(2, 3, 4, 5));
-        map.put("id",        45);
-        map.put("default",   null);
-        map.put("checked",   false);
-        map.put("numbers3", List.of(3, 4, 5));
-        map.put("chars1",   List.of("a", "b", "c"));
-        map.put("chars2",   List.of("d", "e", "f"));
-
-        return map;
+    private static String readResource(String fileName) throws Exception {
+        return Files.readString(Path.of(resourcePath(fileName)), StandardCharsets.UTF_8);
     }
 
-    private static Map<String, Object> data2() {
-        var map = new HashMap<String, Object>();
-        map.put("setting1", "Another value");
-        map.put("setting2", 300);
-        map.put("setting3", "none");
-        map.put("key2", "value2");
-        map.put("numbers1", List.of(1, 2, 3, 4));
-        map.put("numbers2", List.of(22, 33, 44, 55));
-        map.put("id", null);
-        map.put("default", List.of("value1", "value2"));
-        map.put("checked", true);
-        map.put("numbers4", List.of(4, 5, 6));
-        map.put("chars1", List.of("a", "b", "c"));
-        map.put("chars2", false);
-        map.put("obj1", Map.of(
-                "nestedKey", "value",
-                "isNested", true
-        ));
-
-        return map;
+    private static Map<String, Object> parse(String fileName) throws Exception {
+        String content = Files.readString(Path.of(resourcePath(fileName)), StandardCharsets.UTF_8);
+        return Parser.parse(content, fileName.endsWith(".json") ? "json" : "yaml");
     }
 
     @Nested
-    @DisplayName("Базовые свойства diff")
-    class BasicProperties {
+    @DisplayName("JSON input")
+    class JsonInput {
 
         @Test
-        @DisplayName("Список с ответом, нужного размера")
-        void size() throws Exception {
-            String diff = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "stylish");
-            // В объединении ключей из data1 и data2 15 уникальных ключей.
-            // Предположим, что формат stylish добавляет две строки для скобок.
-            // Проверяем, что строк больше либо равно количеству ключей.
-            long lineCount = diff.lines().count();
-            assertTrue(lineCount >= 15,
-                    "Количество строк должно быть не меньше количества ключей");
+        void stylishDiffers() throws Exception {
+            String expected = readResource("expected/stylish.txt");
+            String actual   = Differ.generate(resourcePath("file1.json"), resourcePath("file2.json"), "stylish");
+
+            System.out.println("EXPECTED LENGTH: " + expected.length());
+            System.out.println("ACTUAL LENGTH:   " + actual.length());
+
+            Assertions.assertEquals(expected, actual);
         }
 
         @Test
-        @DisplayName("Должен вернуть корректный stylish‑формат для простых map")
-        void simpleCase() throws Exception {
-            String diff = Differ.generate(resourcePath("file1.json"), resourcePath("file2.json"), "stylish");
-
-            assertTrue(diff.contains("host: hexlet.io"));
-            assertTrue(diff.contains("- timeout: 50"));
-            assertTrue(diff.contains("+ timeout: 20"));
-            assertTrue(diff.contains("- proxy: 123.234.53.22"));
-            assertTrue(diff.contains("+ verbose: true"));
-            assertTrue(diff.contains("- follow: false"));
+        void stylish() throws Exception {
+            assertEquals(readResource("expected/stylish.txt"),
+                    Differ.generate(resourcePath("file1.json"), resourcePath("file2.json"), "stylish"));
         }
 
         @Test
-        @DisplayName("Выброс исключения при неизвестном формате")
-        void unknownFormat() {
-            assertThrows(IllegalArgumentException.class, () -> {
-                Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "unknown");
-            });
+        void plain() throws Exception {
+            assertEquals(readResource("expected/plain.txt"),
+                    Differ.generate(resourcePath("file1.json"), resourcePath("file2.json"), "plain"));
         }
 
         @Test
-        @DisplayName("Формат по умолчанию должен быть stylish")
-        void defaultFormat() throws Exception {
-            String diffDefault = Differ.generate(
-                    resourcePath("include1.json"),
-                    resourcePath("include2.json"),
-                    "stylish");
-            String diffStylish = Differ.generate(
-                    resourcePath("include1.json"),
-                    resourcePath("include2.json"),
-                    "stylish");
+        void json() throws Exception {
+            assertEquals(readResource("expected/json.txt"),
+                    Differ.generate(resourcePath("file1.json"), resourcePath("file2.json"), "json"));
+        }
 
-            assertEquals(diffDefault, diffStylish);
+        @Test
+        void defaultFormatUsesStylish() throws Exception {
+            assertEquals(readResource("expected/stylish.txt"),
+                    Differ.generate(parse("file1.json"), parse("file2.json")));
         }
     }
 
     @Nested
-    @DisplayName("Plain формат")
-    class PlainFormat {
+    @DisplayName("YAML input")
+    class YamlInput {
 
         @Test
-        @DisplayName("Должен вернуть корректный plain‑формат")
-        void plainFormat() throws Exception {
-            String diff = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "plain");
+        void stylish() throws Exception {
+            assertEquals(readResource("expected/stylish.txt"),
+                    Differ.generate(resourcePath("file1.yaml"), resourcePath("file2.yaml"), "stylish"));
+        }
 
-            assertTrue(diff.contains("Property 'chars2' was updated. From [complex value] to false"));
-            assertTrue(diff.contains("Property 'checked' was updated. From false to true"));
-            assertTrue(diff.contains("Property 'default' was updated. From null to [complex value]"));
-            assertTrue(diff.contains("Property 'id' was updated. From 45 to null"));
-            assertTrue(diff.contains("Property 'key1' was removed"));
-            assertTrue(diff.contains("Property 'key2' was added with value: 'value2'"));
-            assertTrue(diff.contains("Property 'numbers2' was updated. From [complex value] to [complex value]"));
-            assertTrue(diff.contains("Property 'numbers3' was removed"));
-            assertTrue(diff.contains("Property 'numbers4' was added with value: [complex value]"));
-            assertTrue(diff.contains("Property 'obj1' was added with value: [complex value]"));
-            assertTrue(diff.contains("Property 'setting1' was updated. From 'Some value' to 'Another value'"));
-            assertTrue(diff.contains("Property 'setting2' was updated. From 200 to 300"));
-            assertTrue(diff.contains("Property 'setting3' was updated. From true to 'none'"));
+        @Test
+        void plain() throws Exception {
+            assertEquals(readResource("expected/plain.txt"),
+                    Differ.generate(resourcePath("file1.yaml"), resourcePath("file2.yaml"), "plain"));
+        }
+
+        @Test
+        void json() throws Exception {
+            assertEquals(readResource("expected/json.txt"),
+                    Differ.generate(resourcePath("file1.yaml"), resourcePath("file2.yaml"), "json"));
+        }
+
+        @Test
+        void defaultFormatUsesStylish() throws Exception {
+            assertEquals(readResource("expected/stylish.txt"),
+                    Differ.generate(parse("file1.yaml"), parse("file2.yaml")));
         }
     }
 
-    @Nested
-    @DisplayName("Json формат")
-    class JsonFormat {
-
-        @Test
-        @DisplayName("Должен вернуть корректный json‑формат")
-        void jsonFormat() throws Exception {
-            String diff = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "json");
-
-            assertTrue(diff.contains("\"key\":\"chars1\""));
-            assertTrue(diff.contains("\"status\":\"UNCHANGED\""));
-            assertTrue(diff.contains("\"key\":\"chars2\""));
-            assertTrue(diff.contains("\"status\":\"UPDATED\""));
-            assertTrue(diff.contains("\"key\":\"checked\""));
-            assertTrue(diff.contains("\"status\":\"UPDATED\""));
-            assertTrue(diff.contains("\"key\":\"default\""));
-            assertTrue(diff.contains("\"status\":\"UPDATED\""));
-            assertTrue(diff.contains("\"key\":\"id\""));
-            assertTrue(diff.contains("\"status\":\"UPDATED\""));
-            assertTrue(diff.contains("\"key\":\"key1\""));
-            assertTrue(diff.contains("\"status\":\"REMOVED\""));
-            assertTrue(diff.contains("\"key\":\"key2\""));
-            assertTrue(diff.contains("\"status\":\"ADDED\""));
-            assertTrue(diff.contains("\"key\":\"numbers1\""));
-            assertTrue(diff.contains("\"status\":\"UNCHANGED\""));
-            assertTrue(diff.contains("\"key\":\"numbers2\""));
-            assertTrue(diff.contains("\"status\":\"UPDATED\""));
-            assertTrue(diff.contains("\"key\":\"numbers3\""));
-            assertTrue(diff.contains("\"status\":\"REMOVED\""));
-            assertTrue(diff.contains("\"key\":\"numbers4\""));
-            assertTrue(diff.contains("\"status\":\"ADDED\""));
-            assertTrue(diff.contains("\"key\":\"obj1\""));
-            assertTrue(diff.contains("\"status\":\"ADDED\""));
-            assertTrue(diff.contains("\"key\":\"setting1\""));
-            assertTrue(diff.contains("\"status\":\"UPDATED\""));
-            assertTrue(diff.contains("\"key\":\"setting2\""));
-            assertTrue(diff.contains("\"status\":\"UPDATED\""));
-            assertTrue(diff.contains("\"key\":\"setting3\""));
-            assertTrue(diff.contains("\"status\":\"UPDATED\""));
-        }
+    @Test
+    void unknownFormatThrows() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> Differ.generate(resourcePath("file1.json"), resourcePath("file2.json"), "unknown"));
     }
 }
