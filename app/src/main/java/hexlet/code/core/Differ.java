@@ -6,30 +6,15 @@ import hexlet.code.formatter.PlainFormatter;
 import hexlet.code.formatter.StylishFormatter;
 import hexlet.code.util.Parser;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeSet;
 
-/**
- * Класс, реализующий построение и форматирование различий между двумя структурами данных.
- *
- * <p>Внутри используется абстрактное представление «DiffNode», которое хранит
- * информацию о ключе, статусе изменения (добавлен, удалён,
- * изменён или не менялся) и значениях из обеих структур.</p>
- *
- * <p>Для форматирования результата реализованы различные {@link Formatter}‑ы.
- * В зависимости от переданного имени формата возвращается строковое представление
- * разницы. По умолчанию используется стиль «stylish».</p>
- */
 public class Differ {
 
-    /**
-     * Генерирует строку с описанием различий между двумя структурами данных в указанном формате.
-     *
-     * @param data1   первая карта, содержащая исходные данные
-     * @param data2   вторая карта, содержащая обновлённые данные
-     * @param format  имя формата (например, {@code "stylish"}, {@code "plain"} или {@code "json"})
-     * @return строковое представление различий согласно выбранному форматёру
-     */
     public static String generate(Map<String, Object> data1,
                                   Map<String, Object> data2,
                                   String format) {
@@ -50,34 +35,43 @@ public class Differ {
         return formatter.format(diff);
     }
 
-    /**
-     * Полный процесс построения diff для файлов: чтение, парсинг, сравнение и форматирование.
-     *
-     * @param filePath1 путь к первому файлу
-     * @param filePath2 путь ко второму файлу
-     * @param formatName имя формата вывода
-     * @return строка с разницей файлов
-     * @throws Exception если чтение, парсинг или форматирование завершились ошибкой
-     */
-    public static String generate(String filePath1, String filePath2, String formatName) throws Exception {
-        Map<String, Object> data1 = Parser.parse(filePath1);
-        Map<String, Object> data2 = Parser.parse(filePath2);
+    public static String generate(String firstPath, String secondPath, String formatName) throws Exception {
+        String firstContent = readContent(firstPath);
+        String secondContent = readContent(secondPath);
+
+        Map<String, Object> data1 = Parser.parse(firstContent, detectFormat(firstPath));
+        Map<String, Object> data2 = Parser.parse(secondContent, detectFormat(secondPath));
         return generate(data1, data2, formatName);
     }
 
-    /**
-     * Внутренний вспомогательный метод, который строит абстрактное представление
-     * различий между двумя картами. Для каждого ключа создаётся объект {@link DiffNode},
-     * в котором хранится статус изменения и соответствующие значения.
-     *
-     * @param data1 первая карта
-     * @param data2 вторая карта
-     * @return список узлов разницы, отсортированный по возрастанию имени ключа
-     */
+    public static String generate(Map<String, Object> data1,
+                                  Map<String, Object> data2) {
+        return generate(data1, data2, "stylish");
+    }
+
+    private static String readContent(String path) throws Exception {
+        return Files.readString(Path.of(path));
+    }
+
+    private static String detectFormat(String path) {
+        String lowerCasePath = path.toLowerCase();
+        if (lowerCasePath.endsWith(".json")) {
+            return "json";
+        }
+        if (lowerCasePath.endsWith(".yml")) {
+            return "yml";
+        }
+        if (lowerCasePath.endsWith(".yaml")) {
+            return "yaml";
+        }
+
+        throw new IllegalArgumentException("Unsupported format: " + path);
+    }
+
     private static List<DiffNode> buildDiff(Map<String, Object> data1,
                                             Map<String, Object> data2) {
 
-        var keys = new java.util.TreeSet<String>();
+        var keys = new TreeSet<String>();
         keys.addAll(data1.keySet());
         keys.addAll(data2.keySet());
 
@@ -88,7 +82,7 @@ public class Differ {
                 diff.add(new DiffNode(key, Status.ADDED, null, data2.get(key)));
             } else if (!data2.containsKey(key)) {
                 diff.add(new DiffNode(key, Status.REMOVED, data1.get(key), null));
-            } else if (java.util.Objects.equals(data1.get(key), data2.get(key))) {
+            } else if (Objects.equals(data1.get(key), data2.get(key))) {
                 diff.add(new DiffNode(key, Status.UNCHANGED, data1.get(key), data2.get(key)));
             } else {
                 diff.add(new DiffNode(key, Status.UPDATED, data1.get(key), data2.get(key)));

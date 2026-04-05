@@ -3,90 +3,80 @@ package hexlet.code.util;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ParserTest {
 
-    /**
-     * Получаем абсолютный путь к файлу из ресурсов.
-     *
-     * @param fileName имя файла в src/test/resources
-     * @return строковый путь, пригодный для Parser.readJson(...)
-     */
-    private String getResourcePath(String fileName) throws Exception {
-        // ClassLoader берёт файл из class‑path (src/test/resources)
+    private String getResourcePath(String name) throws Exception {
         var url = Objects.requireNonNull(
-                this.getClass().getClassLoader().getResource(fileName),
-                "Файл «" + fileName + "» не найден в resources");
+                this.getClass().getClassLoader().getResource(name),
+                "Resource not found: " + name);
         return Paths.get(url.toURI()).toString();
     }
 
+    private String readResource(String name) throws Exception {
+        return Files.readString(Paths.get(getResourcePath(name)));
+    }
+
     @Test
-    @DisplayName("Чтение file1.json должно вернуть корректный Map")
-    void testReadFile1Json() throws Exception {
-        Map<String, Object> map = Parser.parse(getResourcePath("file1.json"));
+    @DisplayName("Reading JSON text should return a correct map")
+    void testReadJsonOne() throws Exception {
+        Map<String, Object> map = Parser.parse(readResource("file1.json"), "json");
 
         assertNotNull(map);
-        assertEquals(4, map.size(), "Количество ключей в файле1");
-
+        assertEquals(4, map.size());
         assertEquals("hexlet.io", map.get("host"));
-        // Jackson парсит числа как Integer
         assertEquals(50, ((Number) map.get("timeout")).intValue());
         assertEquals("123.234.53.22", map.get("proxy"));
         assertEquals(false, map.get("follow"));
     }
 
     @Test
-    @DisplayName("Чтение file2.json должно вернуть корректный Map")
-    void testReadFile2Json() throws Exception {
-        Map<String, Object> map = Parser.parse(getResourcePath("file2.json"));
+    @DisplayName("Reading JSON text should return a correct map")
+    void testReadJsonTwo() throws Exception {
+        Map<String, Object> map = Parser.parse(readResource("file2.json"), "json");
 
         assertNotNull(map);
-        assertEquals(3, map.size(), "Количество ключей во втором файле");
-
+        assertEquals(3, map.size());
         assertEquals("hexlet.io", map.get("host"));
         assertEquals(20, ((Number) map.get("timeout")).intValue());
         assertEquals(true, map.get("verbose"));
     }
 
     @Test
-    @DisplayName("Несуществующий файл вызывает IOException")
-    void testReadNonExistingFile() {
-        // readJson бросает IOException, если файл не найден
-        assertThrows(java.io.IOException.class,
-                () -> Parser.parse("nonexistent.json"),
-                "Ожидается IOException для отсутствующего файла");
+    @DisplayName("Unsupported format should throw an exception")
+    void testUnsupportedFormat() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Parser.parse("{}", "xml"));
     }
 
     @Test
-    @DisplayName("Чтение file1.yaml должно вернуть корректный Map")
-    void testReadFile1Yaml() throws Exception {
-        Map<String, Object> map = Parser.parse(getResourcePath("file1.yaml"));
+    @DisplayName("Reading YAML text should return a correct map")
+    void testReadYamlOne() throws Exception {
+        Map<String, Object> map = Parser.parse(readResource("file1.yaml"), "yaml");
 
         assertNotNull(map);
-        assertEquals(4, map.size(), "Количество ключей в файле1");
-
+        assertEquals(4, map.size());
         assertEquals("hexlet.io", map.get("host"));
-        // Jackson парсит числа как Integer
         assertEquals(50, ((Number) map.get("timeout")).intValue());
         assertEquals("123.234.53.22", map.get("proxy"));
         assertEquals(false, map.get("follow"));
     }
 
     @Test
-    @DisplayName("Чтение file2.yaml должно вернуть корректный Map")
-    void testReadFile2Yaml() throws Exception {
-        Map<String, Object> map = Parser.parse(getResourcePath("file2.yaml"));
+    @DisplayName("Reading YAML text should return a correct map")
+    void testReadYamlTwo() throws Exception {
+        Map<String, Object> map = Parser.parse(readResource("file2.yaml"), "yaml");
 
         assertNotNull(map);
-        assertEquals(3, map.size(), "Количество ключей во втором файле");
-
+        assertEquals(3, map.size());
         assertEquals("hexlet.io", map.get("host"));
         assertEquals(20, ((Number) map.get("timeout")).intValue());
         assertEquals(true, map.get("verbose"));
