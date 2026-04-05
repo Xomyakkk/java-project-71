@@ -40,15 +40,15 @@ public class PlainFormatter implements Formatter {
             // Используем switch‑выражение, чтобы получить строку в зависимости от статуса
             String line = switch (node.status()) {
                 case ADDED ->
-                        // Добавлено новое свойство: выводим ключ и значение нового значения
-                        String.format("Property '%s' was added with value: %s",
+                    // Добавлено новое свойство: выводим ключ и значение нового значения
+                    String.format("Property '%s' was added with value: %s",
                         node.key(), stringify(node.newValue()));
                 case REMOVED ->
                         // Свойство удалено: только имя свойства
-                        String.format("Property '%s' was removed", node.key());
+                    String.format("Property '%s' was removed", node.key());
                 case UPDATED ->
                         // Значение изменилось: выводим старое и новое значение
-                        String.format("Property '%s' was updated. From %s to %s",
+                    String.format("Property '%s' was updated. From %s to %s",
                         node.key(), stringify(node.oldValue()), stringify(node.newValue()));
                 case UNCHANGED -> "";
             };

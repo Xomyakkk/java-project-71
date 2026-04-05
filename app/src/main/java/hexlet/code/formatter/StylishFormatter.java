@@ -41,7 +41,7 @@ public class StylishFormatter implements Formatter {
                 /* Если ключ не изменился – выводим его без символов,
                  * но сохраняем отступы для читабельности. */
                 case UNCHANGED ->
-                        result.append("    ")
+                    result.append("    ")
                                 .append(node.key())
                                 .append(": ")
                                 .append(node.oldValue())
@@ -49,7 +49,7 @@ public class StylishFormatter implements Formatter {
 
                 /* Для добавленных ключей ставим «+» и выводим новое значение */
                 case ADDED ->
-                        result.append("  + ")
+                    result.append("  + ")
                                 .append(node.key())
                                 .append(": ")
                                 .append(node.newValue())
@@ -57,7 +57,7 @@ public class StylishFormatter implements Formatter {
 
                 /* Удалённые ключи помечаем «-» и выводим старое значение */
                 case REMOVED ->
-                        result.append("  - ")
+                    result.append("  - ")
                                 .append(node.key())
                                 .append(": ")
                                 .append(node.oldValue())
