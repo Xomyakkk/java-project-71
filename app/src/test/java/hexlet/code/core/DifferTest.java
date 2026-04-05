@@ -70,7 +70,7 @@ class DifferTest {
 
         @Test
         @DisplayName("Список с ответом, нужного размера")
-        void size() throws Exception{
+        void size() throws Exception {
             String diff = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "stylish");
             // В объединении ключей из data1 и data2 15 уникальных ключей.
             // Предположим, что формат stylish добавляет две строки для скобок.
@@ -104,8 +104,14 @@ class DifferTest {
         @Test
         @DisplayName("Формат по умолчанию должен быть stylish")
         void defaultFormat() throws Exception {
-            String diffDefault = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "stylish");
-            String diffStylish = Differ.generate(resourcePath("include1.json"), resourcePath("include2.json"), "stylish");
+            String diffDefault = Differ.generate(
+                    resourcePath("include1.json"),
+                    resourcePath("include2.json"),
+                    "stylish");
+            String diffStylish = Differ.generate(
+                    resourcePath("include1.json"),
+                    resourcePath("include2.json"),
+                    "stylish");
 
             assertEquals(diffDefault, diffStylish);
         }
