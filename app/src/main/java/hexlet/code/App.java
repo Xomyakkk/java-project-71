@@ -1,6 +1,5 @@
 package hexlet.code;
 
-import hexlet.code.core.Differ;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -19,9 +18,9 @@ public class App implements Callable<Integer> {
 
     @Option(names = {"-f", "--format"},
             defaultValue = "stylish",
-            description = "output format [default: stylish]",
+            description = "output format [default: ${DEFAULT-VALUE}]",
             paramLabel = "format")
-    private String format = "stylish";
+    private String format;
 
     @Parameters(index = "0", description = "path to first source")
     private File firstPath;

@@ -1,9 +1,8 @@
-package hexlet.code.core;
+package hexlet.code;
 
+import hexlet.code.core.DiffBuilder;
+import hexlet.code.core.DiffNode;
 import hexlet.code.formatter.Formatter;
-import hexlet.code.formatter.JsonFormatter;
-import hexlet.code.formatter.PlainFormatter;
-import hexlet.code.formatter.StylishFormatter;
 import hexlet.code.util.Parser;
 
 import java.nio.file.Files;
@@ -19,17 +18,7 @@ public class Differ {
 
         List<DiffNode> diff = DiffBuilder.build(data1, data2);
 
-        Formatter formatter;
-        if ("stylish".equals(format)) {
-            formatter = new StylishFormatter();
-        } else if ("plain".equals(format)) {
-            formatter = new PlainFormatter();
-        } else if ("json".equals(format)) {
-            formatter = new JsonFormatter();
-        } else {
-            throw new IllegalArgumentException("Unknown format: " + format);
-        }
-
+        Formatter formatter = Formatter.getFormatter(format);
         return formatter.format(diff);
     }
 
@@ -52,18 +41,11 @@ public class Differ {
     }
 
     private static String detectFormat(String path) {
-        String lowerCasePath = path.toLowerCase();
-        if (lowerCasePath.endsWith(".json")) {
-            return "json";
+        int lastDotIndex = path.lastIndexOf('.');
+        if (lastDotIndex == -1 || lastDotIndex == path.length() - 1) {
+            return path;
         }
-        if (lowerCasePath.endsWith(".yml")) {
-            return "yml";
-        }
-        if (lowerCasePath.endsWith(".yaml")) {
-            return "yaml";
-        }
-
-        throw new IllegalArgumentException("Unsupported format: " + path);
+        return path.substring(lastDotIndex + 1).toLowerCase();
     }
 
 }

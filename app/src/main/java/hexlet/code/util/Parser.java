@@ -16,10 +16,11 @@ public class Parser {
     }
 
     private static ObjectMapper getMapper(String format) {
-        if ("json".equals(format)) {
+        String normalizedFormat = format.toLowerCase();
+        if ("json".equals(normalizedFormat)) {
             return JSON_MAPPER;
         }
-        if ("yml".equals(format) || "yaml".equals(format)) {
+        if ("yml".equals(normalizedFormat) || "yaml".equals(normalizedFormat)) {
             return YAML_MAPPER;
         }
 
