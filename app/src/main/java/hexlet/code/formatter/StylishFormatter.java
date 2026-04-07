@@ -77,6 +77,7 @@ public class StylishFormatter implements Formatter {
                             .append(node.newValue())
                             .append("\n");
                 }
+                default -> throw new IllegalStateException("Unexpected status: " + node.status());
             }
         }
 

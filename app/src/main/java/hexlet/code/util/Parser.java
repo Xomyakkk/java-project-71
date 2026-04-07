@@ -1,5 +1,6 @@
 package hexlet.code.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
@@ -12,7 +13,7 @@ public class Parser {
 
     public static Map<String, Object> parse(String content, String format) throws Exception {
         ObjectMapper mapper = getMapper(format);
-        return mapper.readValue(content, Map.class);
+        return mapper.readValue(content, new TypeReference<Map<String, Object>>() { });
     }
 
     private static ObjectMapper getMapper(String format) {
