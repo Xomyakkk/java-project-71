@@ -13,13 +13,21 @@ import java.util.Map;
 public class Differ {
 
     public static String generate(Map<String, Object> data1,
-                                  Map<String, Object> data2,
-                                  String format) throws Exception {
+                                  Map<String, Object> data2) throws Exception {
+        return generate(data1, data2, "stylish");
+    }
 
+    public static String generate(Map<String, Object> data1,
+                                  Map<String, Object> data2,
+                                  String formatName) throws Exception {
         List<DiffNode> diff = DiffBuilder.build(data1, data2);
 
-        Formatter formatter = Formatter.getFormatter(format);
+        Formatter formatter = Formatter.getFormatter(formatName);
         return formatter.format(diff);
+    }
+
+    public static String generate(String firstPath, String secondPath) throws Exception {
+        return generate(firstPath, secondPath, "stylish");
     }
 
     public static String generate(String firstPath, String secondPath, String formatName) throws Exception {
@@ -29,11 +37,6 @@ public class Differ {
         Map<String, Object> data1 = Parser.parse(firstContent, detectFormat(firstPath));
         Map<String, Object> data2 = Parser.parse(secondContent, detectFormat(secondPath));
         return generate(data1, data2, formatName);
-    }
-
-    public static String generate(Map<String, Object> data1,
-                                  Map<String, Object> data2) throws Exception {
-        return generate(data1, data2, "stylish");
     }
 
     private static String readContent(String path) throws Exception {
