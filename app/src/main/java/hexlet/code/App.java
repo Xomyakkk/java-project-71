@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
         version = "0.1",
         description = "Compares two configuration sources and shows a difference."
 )
-public class App implements Callable<Integer> {
+public final class App implements Callable<Integer> {
 
     @Option(names = {"-f", "--format"},
             defaultValue = "stylish",

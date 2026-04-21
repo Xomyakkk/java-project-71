@@ -5,7 +5,7 @@ import hexlet.code.core.DiffNode;
 
 import java.util.List;
 
-public class JsonFormatter implements Formatter {
+public final class JsonFormatter implements Formatter {
 
     @Override
     public String format(List<DiffNode> diff) throws Exception {
