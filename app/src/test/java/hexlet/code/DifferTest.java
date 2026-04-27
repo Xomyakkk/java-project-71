@@ -3,7 +3,6 @@ package hexlet.code;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import hexlet.code.util.Parser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,11 +11,9 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Objects;
 
 class DifferTest {
-
     private static String resourcePath(String fileName) throws Exception {
         var url = Objects.requireNonNull(
                 DifferTest.class.getClassLoader().getResource(fileName),
@@ -26,11 +23,6 @@ class DifferTest {
 
     private static String readResource(String fileName) throws Exception {
         return Files.readString(Path.of(resourcePath(fileName)), StandardCharsets.UTF_8);
-    }
-
-    private static Map<String, Object> parse(String fileName) throws Exception {
-        String content = Files.readString(Path.of(resourcePath(fileName)), StandardCharsets.UTF_8);
-        return Parser.parse(content, fileName.endsWith(".json") ? "json" : "yaml");
     }
 
     @Nested
@@ -69,7 +61,7 @@ class DifferTest {
         @Test
         void defaultFormatUsesStylish() throws Exception {
             assertEquals(readResource("expected/stylish.txt"),
-                    Differ.generate(parse("file1.json"), parse("file2.json")));
+                    Differ.generate(resourcePath("file1.json"), resourcePath("file2.json")));
         }
     }
 
@@ -98,7 +90,7 @@ class DifferTest {
         @Test
         void defaultFormatUsesStylish() throws Exception {
             assertEquals(readResource("expected/stylish.txt"),
-                    Differ.generate(parse("file1.yaml"), parse("file2.yaml")));
+                    Differ.generate(resourcePath("file1.yaml"), resourcePath("file2.yaml")));
         }
     }
 
