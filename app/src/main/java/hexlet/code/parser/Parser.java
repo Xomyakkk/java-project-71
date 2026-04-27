@@ -16,7 +16,7 @@ public class Parser {
         return mapper.readValue(content, new TypeReference<Map<String, Object>>() { });
     }
 
-    private ObjectMapper getMapper(String format) {
+    private static ObjectMapper getMapper(String format) {
         String normalizedFormat = format.toLowerCase();
         if ("json".equals(normalizedFormat)) {
             return JSON_MAPPER;
